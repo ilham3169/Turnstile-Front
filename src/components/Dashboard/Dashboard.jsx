@@ -4,6 +4,10 @@ import axios from 'axios';
 import UserTable from './UserTable';
 import UserForm from './UserForm';
 import './Dashboard.css';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+
 
 const API_URL = 'http://127.0.0.1:8000/users';
 
@@ -32,13 +36,59 @@ const Dashboard = () => {
         fetchUsers();
     }, []);
 
+
     const handleFormSubmit = async (userData) => {
         try {
             if (editingUser) {
-                await axios.put(`${API_URL}/${userData.user_id}`, userData);
+                const editData = {
+                    first_name: userData.first_name,
+                    last_name: userData.last_name,
+                    phone_number: userData.phone_number,
+                    membership_id: userData.membership_id,
+                    status: userData.status,
+                    uid: userData.uid
+                } 
+                console.log(editData)
+                await axios.patch(`http://127.0.0.1:8000/users/edit/fully/${userData.user_id}`, editData)
             } else {
-                await axios.post(API_URL, userData);
+                try{
+                    const response = await axios.get(`http://127.0.0.1:8000/rfid_cards/uid/${userData.uid}`)
+                    toast.warn("This card has been used", {
+                        position: "top-right",
+                        autoClose: 4000,
+                        hideProgressBar: false,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                        theme: "colored",
+                    });
+                    return
+
+                }catch(error){
+                    if(error.response.data.detail == "Card not found"){
+                        const response = await axios.post("http://127.0.0.1:8000/users/user/create", userData);
+
+                        if (response.status !== 200) {
+                            throw new Error(`HTTP error! Status: ${response.status}`);
+                        }
+
+                        const new_user_id = response.data.user_id;
+        
+                        let rfidData = {
+                            card_id: userData.uid,
+                            user_id: new_user_id,
+                        };
+
+                        await axios.post('http://127.0.0.1:8000/rfid_cards/create', rfidData);
+                        await axios.patch(`http://127.0.0.1:8000/users/edit/set_entry/${new_user_id}`);
+        
+                        const message = `Yeni müştəri qeydiyyatı\n👤 Ad Soyad: ${response.data.first_name} ${response.data.last_name}\nQeydiyyat növü : ${response.data.membership_id}`;
+                        await axios.post("http://127.0.0.1:8000/telegram/send-message/", { text: message });
+                    }   
+                }
+                
             }
+            
             setIsFormOpen(false);
             setEditingUser(null);
             fetchUsers();
@@ -50,7 +100,8 @@ const Dashboard = () => {
     const handleDelete = async (userId) => {
         if (window.confirm('Are you sure you want to delete this user?')) {
             try {
-                await axios.delete(`${API_URL}/${userId}`);
+                await axios.delete(`http://127.0.0.1:8000/users/user/delete/${userId}`);
+                fetchUsers(); 
             } catch (err) {
                 console.error('Error deleting user:', err);
             }
@@ -67,6 +118,10 @@ const Dashboard = () => {
         setIsFormOpen(true);
     };
 
+    const refresh = () => {
+        fetchUsers();
+    };
+
     if (loading) {
         return <div className="dashboard-container">Loading users...</div>;
     }
@@ -79,10 +134,10 @@ const Dashboard = () => {
         <div className="dashboard-container">
             <header className="dashboard-header">
                 <h1>Dashboard</h1>
-                <button className="add-user-btn" onClick={handleAddUser}>
-                    Add New User
-                </button>
+                <button className="refresh-btn" onClick={refresh}>Refresh</button>
+                <button className="add-user-btn" onClick={handleAddUser}>Add New User</button>
             </header>
+
 
             {isFormOpen && (
                 <div className="form-modal">
@@ -107,6 +162,7 @@ const Dashboard = () => {
                     onDelete={handleDelete}
                 />
             </section>
+            <ToastContainer />
         </div>
     );
 };

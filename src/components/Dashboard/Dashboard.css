@@ -41,6 +41,19 @@ body {
     transition: background-color 0.3s;
 }
 
+
+.refresh-btn {
+    padding: 10px 50px;
+    background-color: blue;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+
 .add-user-btn:hover {
     background-color: #45a049;
 }
@@ -205,4 +218,26 @@ table tr:hover {
 .form-actions .cancel-btn {
     background-color: #6c757d;
     color: white;
+}
+
+.warning-popup {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #ffe0e0;
+    color: #a70000;
+    border: 1px solid #ff4d4d;
+    padding: 12px 18px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    z-index: 1000;
+    font-weight: bold;
+    animation: fadeInOut 4s ease-in-out;
+}
+
+@keyframes fadeInOut {
+    0% { opacity: 0; transform: translateY(-20px); }
+    10% { opacity: 1; transform: translateY(0); }
+    90% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(-20px); }
 }

@@ -15,6 +15,7 @@ const UserTable = ({ users, onEdit, onDelete }) => {
                         <th>Status</th>
                         <th>Entry Count</th>
                         <th>Last Entry</th>
+                        <th>Inside</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -35,6 +36,9 @@ const UserTable = ({ users, onEdit, onDelete }) => {
                                     ? moment(user.last_entry).format('MMM D, YYYY HH:mm:ss')
                                     : 'N/A'}
                             </td>
+                            <td>
+                                {user.is_inside ? "Yes" : "No"}
+                            </td>
                             <td className="actions">
                                 <button className="edit-btn" onClick={() => onEdit(user)}>
                                     Edit
@@ -42,6 +46,7 @@ const UserTable = ({ users, onEdit, onDelete }) => {
                                 <button className="delete-btn" onClick={() => onDelete(user.user_id)}>
                                     Delete
                                 </button>
+
                             </td>
                         </tr>
                     ))}
